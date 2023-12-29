@@ -7,6 +7,10 @@ from . import util
 class SearchForm(forms.Form):
     wikisearch = forms.CharField(label="", widget=forms.TextInput(attrs={'placeholder': 'Search Encyclopedia'}))
 
+class NewPageForm(forms.Form):
+    nptitle = forms.CharField(label="Title")
+    npcontent = forms.CharField(label="Content")
+    
 
 def index(request):
     foundtitles = []
@@ -20,8 +24,6 @@ def index(request):
                     return wikipage(request, title)
                 if title.upper().find(wikisearch.upper()) != -1:
                     foundtitles.append(title)
-
-            print(foundtitles)
 
             if not foundtitles:
                 foundtitles.append("No pages were found")
@@ -46,5 +48,11 @@ def wikipage(request, wikititle):
     return render(request, "encyclopedia/wikipage.html", {
         "wikititle": wikititle,
         "wikicontent": wikicontent,
+        "form": SearchForm()
+    })
+
+def newpage(request):
+    return render(request, "encyclopedia/newpage.html", {
+        "cform": NewPageForm(),
         "form": SearchForm()
     })
