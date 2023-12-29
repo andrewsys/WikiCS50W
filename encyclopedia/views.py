@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django import forms
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 
 from . import util
 
@@ -9,8 +10,8 @@ class SearchForm(forms.Form):
 
 class NewPageForm(forms.Form):
     nptitle = forms.CharField(label="Title")
-    npcontent = forms.CharField(label="Content")
-    
+    npcontent = forms.CharField(label="Content", widget=forms.Textarea(attrs={'style': 'height: 80vh;'}))
+
 
 def index(request):
     foundtitles = []
@@ -34,8 +35,10 @@ def index(request):
                 "form": SearchForm()
             })
         else:
-            return HttpResponse("Invalid")
-
+            return render(request, "encyclopedia/index.html", {
+            "entries": util.list_entries(),
+            "form": SearchForm()
+        })
 
     return render(request, "encyclopedia/index.html", {
         "entries": util.list_entries(),
@@ -48,10 +51,27 @@ def wikipage(request, wikititle):
     return render(request, "encyclopedia/wikipage.html", {
         "wikititle": wikititle,
         "wikicontent": wikicontent,
-        "form": SearchForm()
+        "form": SearchForm(),
     })
 
 def newpage(request):
+    if request.method == 'POST':
+        form = NewPageForm(request.POST)
+        wikititles = util.list_entries()
+
+        if form.is_valid():
+            nptitle = form.cleaned_data["nptitle"]
+            npcontent = form.cleaned_data["npcontent"]
+
+            for titles in wikititles:
+                if titles == nptitle:
+                    return HttpResponse("Error: Page already exists.")
+
+            file = open(f"entries/{nptitle}.md", 'w')
+            file.write(npcontent)
+            file.close()
+            return index(request)
+
     return render(request, "encyclopedia/newpage.html", {
         "cform": NewPageForm(),
         "form": SearchForm()

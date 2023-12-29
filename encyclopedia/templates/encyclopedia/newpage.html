@@ -5,8 +5,9 @@
 {% endblock %}
 
 {% block body %}
-    <form class="cform" action="{% url 'index' %}" method="post">
+    <form class="cform" action="{% url 'newpage' %}" method="post">
         {% csrf_token %}
         {{ cform }}
+        <input type="submit" name="Create Page" value="Create Page">
     </form>
 {% endblock %}
