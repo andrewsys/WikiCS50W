@@ -1,0 +1,18 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    Search
+{% endblock %}
+
+{% block body %}
+    <h1>Search results for '{{wikisearch}}'</h1>
+    <ul>
+    {% for title in foundtitles %}
+        {% if title == 'No pages were found' %}
+            <p>No pages were found.</p>
+        {% else %}
+            <li><a href='{{title}}'>{{title}}</a></li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% endblock %}

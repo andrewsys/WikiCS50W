@@ -1,0 +1,13 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    {{ wikititle }}
+{% endblock %}
+
+{% block body %}
+    {% if wikicontent == None %}
+        The desired page does not exist.
+    {% else %}
+        {{ wikicontent }}
+    {% endif %}
+{% endblock %}
