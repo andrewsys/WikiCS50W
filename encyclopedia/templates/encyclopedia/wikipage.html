@@ -8,6 +8,13 @@
     {% if wikicontent == None %}
         The desired page does not exist.
     {% else %}
-        {{ wikicontent }}
+        {{ wikicontent|safe }}
     {% endif %}
+    <br><br>
+    <form action="{% url 'modify' %}" method="post">
+        {% csrf_token %}
+        <input type="text" value="{{wikititle}}" name="mtitle" hidden>
+        <input type="text" value="{{wikicontent}}" name="mcontent" hidden>
+        <input type="submit" value="Edit Page">
+    </form>
 {% endblock %}

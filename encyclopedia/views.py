@@ -3,6 +3,8 @@ from django import forms
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 
+from markdown2 import Markdown
+from random import randint
 from . import util
 
 class SearchForm(forms.Form):
@@ -10,7 +12,7 @@ class SearchForm(forms.Form):
 
 class NewPageForm(forms.Form):
     nptitle = forms.CharField(label="Title")
-    npcontent = forms.CharField(label="Content", widget=forms.Textarea(attrs={'style': 'height: 80vh;'}))
+    npcontent = forms.CharField(label="", widget=forms.Textarea(attrs={'placeholder': 'Markdown content', 'style': 'height: 80vh;'}))
 
 
 def index(request):
@@ -46,7 +48,8 @@ def index(request):
     })
 
 def wikipage(request, wikititle):
-    wikicontent = util.get_entry(wikititle)
+    markdowner = Markdown()
+    wikicontent = markdowner.convert(util.get_entry(wikititle))
 
     return render(request, "encyclopedia/wikipage.html", {
         "wikititle": wikititle,
@@ -70,9 +73,38 @@ def newpage(request):
             file = open(f"entries/{nptitle}.md", 'w')
             file.write(npcontent)
             file.close()
-            return index(request)
+            return wikipage(request, nptitle)
 
     return render(request, "encyclopedia/newpage.html", {
         "cform": NewPageForm(),
         "form": SearchForm()
     })
+
+def modify(request):
+    if request.method == 'POST':
+        mtitle = request.POST.get('mtitle', None)
+        if not mtitle == None:
+            for title in util.list_entries():
+                if mtitle == title:
+                    mcontent = util.get_entry(mtitle)
+                    return render(request, "encyclopedia/modify.html", {        
+                        "form": SearchForm(),
+                        "title": mtitle,
+                        "content": mcontent,
+                    })
+        else:
+            emtitle = request.POST.get('emtitle', None)
+            for title in util.list_entries():
+                if emtitle == title:
+                    emcontent = request.POST.get('emcontent', None)
+                    file = open(f"entries/{emtitle}.md", 'w')
+                    file.write(emcontent)
+                    file.close()
+                    return wikipage(request, emtitle)
+    return index(request)
+
+def randpage(request):
+    pages = util.list_entries()
+    goto = randint(0, len(pages))-1
+
+    return wikipage(request, pages[goto])
